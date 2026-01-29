@@ -47,4 +47,5 @@ coverage/
 
 # Firebase
 firebase-credentials.json
+firebase-service-account.json
 serviceAccountKey.json
