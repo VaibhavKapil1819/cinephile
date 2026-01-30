@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any
 from app.db.firebase import get_db
 from google.cloud import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 COLLECTION_NAME = "videos"
 
@@ -12,7 +13,7 @@ class VideoCRUD:
         
         collection_ref = db.collection(COLLECTION_NAME)
         if category and category.strip():
-            query = collection_ref.where('category', '==', category).limit(limit)
+            query = collection_ref.where(filter=FieldFilter('category', '==', category)).limit(limit)
         else:
             query = collection_ref.limit(limit)
             
@@ -66,7 +67,7 @@ class VideoCRUD:
         
         collection_ref = db.collection(COLLECTION_NAME)
         # Simple prefix match
-        docs = collection_ref.where('title', '>=', query).where('title', '<=', query + '\uf8ff').limit(limit).stream()
+        docs = collection_ref.where(filter=FieldFilter('title', '>=', query)).where(filter=FieldFilter('title', '<=', query + '\uf8ff')).limit(limit).stream()
         
         videos = []
         for doc in docs:

@@ -1,118 +1,84 @@
 import asyncio
-import os
-import sys
-
-# Add the current directory to sys.path to allow imports from 'app'
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from app.db.firebase import initialize_firebase, get_db
 from app.cruds.video import video_crud
 
-# Sample movies to seed Firestore
-SAMPLE_MOVIES = [
+# Sample video data for Cinephile
+SAMPLE_VIDEOS = [
     {
-        "id": "inception-123",
-        "title": "Inception",
-        "description": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/qmDpS9ZCCmTvZu32Hnbi6L4zpwo.jpg",
-        "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        "category": "Sci-Fi",
-        "duration": "2h 28m",
-        "trending": True,
-        "views": 1024,
-        "releasedAt": "2010-07-16"
-    },
-    {
-        "id": "interstellar-456",
-        "title": "Interstellar",
-        "description": "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        "title": "Interstellar Journey",
+        "description": "A crew of astronauts travel through a wormhole in space in an attempt to ensure humanity's survival.",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=1000",
         "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
         "category": "Sci-Fi",
         "duration": "2h 49m",
         "trending": True,
-        "views": 2048,
-        "releasedAt": "2014-11-07"
+        "views": 1500
     },
     {
-        "id": "dark-knight-789",
-        "title": "The Dark Knight",
-        "description": "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/qJ2tW6WMUDp9EXjBYPj3zUoseGq.jpg",
+        "title": "Neon Nights",
+        "description": "In a future where memory is a commodity, a detective hunts for a truth that was never meant to be found.",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1614850523296-e8c041de24c6?auto=format&fit=crop&q=80&w=1000",
+        "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "category": "Sci-Fi",
+        "duration": "1h 55m",
+        "trending": False,
+        "views": 800
+    },
+    {
+        "title": "The Crimson Heist",
+        "description": "An elite team of thieves plans the most ambitious bank robbery in history, only to realize they are being played.",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&q=80&w=1000",
         "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
         "category": "Action",
-        "duration": "2h 32m",
-        "trending": False,
-        "views": 5000,
-        "releasedAt": "2008-07-18"
+        "duration": "2h 10m",
+        "trending": True,
+        "views": 2200
     },
     {
-        "id": "pulp-fiction-101",
-        "title": "Pulp Fiction",
-        "description": "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/d5iIl9h9btztU0kzGRvUORghGvX.jpg",
+        "title": "Urban Noir",
+        "description": "A gritty look into the underbelly of a city that never sleeps, where every corner hides a secret.",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=1000",
         "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
         "category": "Crime",
-        "duration": "2h 34m",
-        "trending": True,
-        "views": 3500,
-        "releasedAt": "1994-10-14"
-    },
-    {
-        "id": "matrix-202",
-        "title": "The Matrix",
-        "description": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/f89U3Y9S669Yv69q7XUq6S676Oq.jpg",
-        "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        "category": "Sci-Fi",
-        "duration": "2h 16m",
+        "duration": "2h 5m",
         "trending": False,
-        "views": 8000,
-        "releasedAt": "1999-03-31"
+        "views": 450
     },
     {
-        "id": "dune-303",
-        "title": "Dune",
-        "description": "Feature adaptation of Frank Herbert's science fiction novel, about the son of a noble family entrusted with the protection of the most valuable asset and most vital element in the galaxy.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/d5NXSklZfsDf7zdoxasgHu46696.jpg",
+        "title": "Shadow Protocol",
+        "description": "A retired assassin is forced back into the game when his past catches up with him in the most brutal way.",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1000",
         "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        "category": "Sci-Fi",
-        "duration": "2h 35m",
-        "trending": True,
-        "views": 4200,
-        "releasedAt": "2021-10-22"
-    },
-    {
-        "id": "godfather-404",
-        "title": "The Godfather",
-        "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
-        "thumbnailUrl": "https://image.tmdb.org/t/p/w1280/3bhkrjOiERoSTq90GMa98p1C0mk.jpg",
-        "videoUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        "category": "Crime",
-        "duration": "2h 55m",
+        "category": "Action",
+        "duration": "1h 48m",
         "trending": False,
-        "views": 9500,
-        "releasedAt": "1972-03-24"
+        "views": 1200
     }
 ]
 
-async def seed():
-    print("🎬 Starting database seeding...")
+async def seed_database():
+    print("🚀 Starting database seeding...")
     initialize_firebase()
     db = get_db()
     
     if db is None:
-        print("❌ Error: Firestore not initialized. Check your credentials.")
+        print("❌ Error: Firebase not initialized. Check your credentials.")
         return
 
-    for movie in SAMPLE_MOVIES:
+    # Check if we already have videos
+    existing_videos = await video_crud.get_multi(limit=1)
+    if existing_videos:
+        print("ℹ️ Database already contains videos. Skipping seeding.")
+        # return # Uncomment if you want to skip
+
+    for video in SAMPLE_VIDEOS:
         try:
-            video_id = await video_crud.create(movie)
-            print(f"✅ Created: {movie['title']} (ID: {video_id})")
+            video_id = await video_crud.create(video)
+            print(f"✅ Created video: {video['title']} (ID: {video_id})")
         except Exception as e:
-            print(f"❌ Failed to create {movie['title']}: {e}")
+            print(f"❌ Failed to create video {video['title']}: {e}")
 
     print("✨ Seeding complete!")
 
 if __name__ == "__main__":
-    asyncio.run(seed())
+    asyncio.run(seed_database())

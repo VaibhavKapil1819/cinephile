@@ -5,6 +5,7 @@ from jose import jwt, JWTError
 from pydantic import ValidationError
 from app.core.config import settings
 from app.models.schemas.video import User
+from app.cruds.user import user_crud
 
 security = HTTPBearer()
 
@@ -28,9 +29,11 @@ async def get_current_user(
             detail="Could not validate credentials",
         )
     
-    # In a real app, you would fetch from DB here
-    # For now, we return a mock user based on the email from JWT
-    return User(id="1", email=email, displayName="User")
+    user = await user_crud.get_by_email(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return User(**user)
 
 async def get_current_active_user(
     current_user: User = Depends(get_current_user),

@@ -13,6 +13,18 @@ export interface Video {
     releasedAt: string;
 }
 
+export interface User {
+    id: string;
+    email: string;
+    displayName: string;
+    disabled: boolean;
+}
+
+export interface AuthResponse {
+    access_token: string;
+    token_type: string;
+}
+
 export async function fetchHomeFeed(category?: string): Promise<Video[]> {
     try {
         const url = category
@@ -82,5 +94,61 @@ export async function checkBackendHealth(): Promise<boolean> {
         return response.ok;
     } catch {
         return false;
+    }
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse | null> {
+    try {
+        const formData = new URLSearchParams();
+        formData.append('username', email); // OAuth2 expects 'username'
+        formData.append('password', password);
+
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData,
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Login failed:', error);
+        return null;
+    }
+}
+
+export async function register(email: string, password: string, displayName: string): Promise<User | null> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, displayName }),
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Registration failed:', error);
+        return null;
+    }
+}
+
+export async function fetchUserProfile(token: string): Promise<User | null> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/profile`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to fetch profile:', error);
+        return null;
     }
 }
